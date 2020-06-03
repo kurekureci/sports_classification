@@ -34,8 +34,8 @@ if TRAINING:
 
         [train_data, test_data, train_labels, test_labels] = preparator.split_train_test_data(padded_tokens, labels)
         categories_weights = lstm_classificator.calculate_category_weights(data_df, categories=categories, weighted=False)
-        # model = lstm_classificator.train_model([train_data, test_data, train_labels, test_labels],
-        #                                        class_weights=categories_weights, save_model=True)
+        model = lstm_classificator.train_model([train_data, test_data, train_labels, test_labels],
+                                               class_weights=categories_weights, save_model=True)
         lstm_classificator.evaluate_model(test_data, test_labels, categories)
 
 if CLASSIFICATION:
