@@ -1,52 +1,41 @@
-import os
 import pandas as pd
-import pickle
-from nltk.tokenize.casual import casual_tokenize
-from sklearn import model_selection, preprocessing
+import re
+from sklearn import model_selection
 from typing import List
 
 
 class DatasetPreparation:
 
-    def __init__(self, version: str, csv_file_name: str = 'data/sportoclanky.csv') -> None:
+    def __init__(self, csv_file_name: str = 'data/sportoclanky.csv') -> None:
         self._input_file_name = csv_file_name
-        self._version = version
+
+    @staticmethod
+    def clean_text(input_text: str) -> str:
+        """ Cleans the input text from any "bad" characters.
+
+        :return: modified string
+        """
+        text = input_text.lower()
+        text = re.sub(r'\d+', '', text)  # replace digits with nothing
+        text = re.sub(r'[/(){}\[\]\|@,;:.]', ' ', text)  # replace the matched string with space
+        text = text.replace('  ', ' ').strip(' ')  # get rid of double spaces
+        return text
 
     def prepare_dataset(self, text_column_names: List[str]) -> list:
-        """Loads input csv data and prepare the for the feature extractor.
+        """Loads and cleans input csv data.
 
         Text is tokenized and categories encoded.
         :param text_column_names specifies the columns in csv file, that should be concatenated to the 'text' DF column
         """
-        tokens_file_path = f'data/tokens_{self._version}.p'
-        labels_file_path = f'data/labels_{self._version}.p'
-        categories_file_path = 'data/categories.p'
+        data_df = self.load_input_data(text_column_names)
+        data_df['text'] = data_df['text'].apply(self.clean_text)
+        return data_df
 
-        if (os.path.exists(tokens_file_path)) and (os.path.exists(labels_file_path)):
-            tokens = pickle.load(open(tokens_file_path, 'rb'))
-            labels = pickle.load(open(labels_file_path, 'rb'))
-            categories = pickle.load(open(categories_file_path, 'rb'))
-
-        else:
-            data_df = self._load_input_data(text_column_names)
-            tokens = data_df['text'].map(lambda x: casual_tokenize(x))
-
-            # encode categories to labels
-            encoder = preprocessing.LabelEncoder()
-            labels = encoder.fit_transform(data_df['category'])
-            categories = list(encoder.classes_)
-            pickle.dump(tokens, open(tokens_file_path, 'wb'))
-            pickle.dump(labels, open(labels_file_path, 'wb'))
-
-            if not os.path.exists(categories_file_path):
-                pickle.dump(categories, open(categories_file_path, 'wb'))
-
-        return [tokens, labels, categories]
-
-    def _load_input_data(self, text_column_names: List[str] = None) -> pd.DataFrame:
+    def load_input_data(self, text_column_names: List[str] = None) -> pd.DataFrame:
         """Loads data from csv file into DataFrame (DF) with category and text column.
 
         :param text_column_names specifies the columns in csv file, that should be concatenated to the 'text' DF column
+        :return dataframe with category and text columns
         """
         input_data_df = pd.read_csv(self._input_file_name)
         data_df = input_data_df[['category']]
@@ -56,3 +45,12 @@ class DatasetPreparation:
             data_df.loc[:, 'text'] = data_df['text'] + ' ' + input_data_df[text_column]
 
         return data_df
+
+    @staticmethod
+    def split_train_test_data(data: pd.Series, labels: pd.Series) -> list:
+        """Split dataset into training and validation data."""
+        train_data, test_data, train_labels, test_labels = model_selection.train_test_split(data, labels, test_size=0.2,
+                                                                                            random_state=1)
+        print(f'Size of train data: {len(train_data)}')
+        print(f'Size of test data: {len(test_data)}')
+        return [train_data, test_data, train_labels, test_labels]

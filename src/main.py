@@ -1,42 +1,46 @@
-import os
 import pickle
 
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn import model_selection, metrics
+from src.dataset_preparation import DatasetPreparation
+from src.fasttext_vectors import FasttextVectors
+from src.svm_classification import SVMClassification
+from src.lstm_classification import LSTMClassification
 
-
-from dataset_preparation import DatasetPreparation
-from feature_extractor import FeatureExtractor
-
-data_version = 'v0'
-fe_version = 'v0'
+MODEL_TYPE = 'LSTM'
 
 # Data preparation
-preparator = DatasetPreparation(data_version)
+preparator = DatasetPreparation()
 input_text_column_names = ['rss_title', 'rss_perex']
-tokens, labels, categories = preparator.prepare_dataset(['rss_title', 'rss_perex'])
+data_df = preparator.prepare_dataset(input_text_column_names)
 
-# Feature Extractor - FastText
-extractor = FeatureExtractor(fe_version)
-data_vectors = extractor.extract_fasttext_vectors(tokens)
+data_value_counts = data_df.category.value_counts()
+print(data_value_counts)
+#
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# chart = sns.countplot(data_df['category'])
+# chart.set_xticklabels(chart.get_xticklabels(), rotation=45, horizontalalignment='right')
+# plt.show()
 
-# split into training and validation data
-train_data, test_data, train_labels, test_labels = model_selection.train_test_split(data_vectors, labels, test_size=0.2)
-print(f'Size of train data: {len(train_data)}')
-print(f'Size of test data: {len(test_data)}')
+if MODEL_TYPE == 'SVM':
+    svm_classificator = SVMClassification('svm_model_data_v0_fe_v0.p')
+    [tokens, labels, categories] = svm_classificator.get_tokens_and_labels(data_df)
 
-# Classification
-clf_pipeline = Pipeline([('std', StandardScaler()), ('svm', SVC(kernel='rbf'))])
-clf_pipeline.fit(train_data, train_labels)
+    fasttext = FasttextVectors()
+    data_vectors = fasttext.get_data_vectors(tokens)
+    [train_data, test_data, train_labels, test_labels] = preparator.split_train_test_data(data_vectors, labels)
 
-pickle.dump(clf_pipeline, open('svm_model.p', 'wb'))
+    # model = svm_classificator.train_model(train_data, train_labels, save_model=True)
+    svm_classificator.evaluate_model(test_data, test_labels, categories)
 
-predicted_labels = clf_pipeline.predict(test_data)
+elif MODEL_TYPE == 'LSTM':
+    lstm_classificator = LSTMClassification('lstm_model_bidirectional_without_weights.p')
+    [tokens, labels, categories] = lstm_classificator.get_tokens_and_labels(data_df)
+    padded_tokens = lstm_classificator.get_padded_sequences(tokens)
 
-# Classification model evaluation
-print(f"Accuracy: {metrics.accuracy_score(test_labels, predicted_labels)}")
-print("Confusion matrix:")
-print(metrics.confusion_matrix(test_labels, predicted_labels))
-print(metrics.classification_report(test_labels, predicted_labels, target_names=categories))
+    [train_data, test_data, train_labels, test_labels] = preparator.split_train_test_data(padded_tokens, labels)
+    categories_weights = lstm_classificator.calculate_category_weights(data_df, categories=categories, weighted=False)
+    model = lstm_classificator.train_model([train_data, test_data, train_labels, test_labels],
+                                           class_weights=categories_weights, save_model=True)
+    lstm_classificator.evaluate_model(test_data, test_labels, categories)
+
+
