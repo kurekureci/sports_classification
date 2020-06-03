@@ -37,7 +37,6 @@ class LSTMClassification:
                               lower=True)
         tokenizer.fit_on_texts(data_df['text'].values)
         tokens = tokenizer.texts_to_sequences(data_df['text'].values)
-        print(f'Unique tokens: {len(tokenizer.word_index)}')
 
         if not os.path.exists(self._tokenizer_save_path):
             pickle.dump(tokenizer, open(self._tokenizer_save_path, 'wb'))
@@ -49,13 +48,11 @@ class LSTMClassification:
         if not os.path.exists(self._categories_path):
             pickle.dump(categories, open(self._categories_path, 'wb'))
 
-        print('Label tensor shape:', labels.shape)
         return [tokens, labels, categories]
 
     def get_padded_sequences(self, tokens: list) -> list:
         """Returns padded vectors with zeros."""
         padded_tokens = pad_sequences(tokens, maxlen=self._max_sequence_length)
-        print('Data tensor shape:', padded_tokens.shape)
         return padded_tokens
 
     def _get_model(self, input_length) -> Sequential:
