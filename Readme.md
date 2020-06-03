@@ -8,7 +8,7 @@ Vektory dale zpracovává SVM klasifikátor s radiální bázovou funkcí. Pro k
 
 ## LSTM
 
-Dále byla pro klasifikaci trénována LSTM síť, která umožňuje naučení delších závislostí ze vstupního textu. Síť tvoří embedding vrstva pro převod vstupu na vektorovou reprezentaci, LSTM vrstva se 100 neurony, a plně propojená vrstva se softmax aktivační funkcí pro klasifikaci. 
+Dále byla pro klasifikaci trénována LSTM síť, která umožňuje naučení delších závislostí ze vstupního textu. Síť tvoří embedding vrstva pro převod vstupu na vektorovou reprezentaci, dále Bidirectional LSTM vrstva se 100 neurony a plně propojená vrstva se softmax aktivační funkcí pro klasifikaci. 
 
 # Výsledky a závěry
 Vstupní data byla rozdělena na 80% pro trénování a 20% pro testování. Výsledek klasifikace pomocí fastText vektorové reprezentace a SVM byl překvapivě dobrý, přesnost na testovací sadě byla kolem 95%. Při použití LSTM sítě s embedding vrstvou byla výsledná přesnost klasifikace byla přibližně 98%.
