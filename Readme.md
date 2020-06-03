@@ -2,7 +2,7 @@
 
 ## FastText a SVM
 Pro převedení textu na vhodnou číselnou reprezentaci jsem se rozhodla použít v poslední době hojně využívané “word embeddings”.
-Vektorová reprezentace ze vstupních dat byla vytvořena s použitím předtrénovaných vektorů pro češtinu, trénovaných na Common Crawl a Wikipedia textech pomocí fastText modelu, využívajícího CBOW s dimenzí 300, n-gramy délky 5, velikostí okna 5 a minus 10.
+Vektorová reprezentace ze vstupních dat byla vytvořena s použitím předtrénovaných vektorů pro češtinu, trénovaných na Common Crawl a Wikipedia textech pomocí fastText modelu, využívajícího CBOW s dimenzí 300, n-gramy délky 5, velikostí okna 5 a mínus 10.
 
 Vektory dále zpracovává SVM klasifikátor s radiální bázovou funkcí. Pro každý vstup (text) do modelu jsou jeho vektory zprůměrovány a standardizovány odečtením průměru a podělením standartní odchylkou.
 
