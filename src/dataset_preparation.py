@@ -11,7 +11,7 @@ class DatasetPreparation:
 
     @staticmethod
     def clean_text(input_text: str) -> str:
-        """ Cleans the input text from any "bad" characters.
+        """Cleans the input text from "bad" characters, numbers and converts it to lowercase.
 
         :return: modified string
         """
@@ -21,10 +21,9 @@ class DatasetPreparation:
         text = text.replace('  ', ' ').strip(' ')  # get rid of double spaces
         return text
 
-    def prepare_dataset(self, text_column_names: List[str]) -> list:
-        """Loads and cleans input csv data.
+    def prepare_dataset(self, text_column_names: List[str]) -> pd.DataFrame:
+        """Loads and cleans input csv data, text is tokenized and categories encoded.
 
-        Text is tokenized and categories encoded.
         :param text_column_names specifies the columns in csv file, that should be concatenated to the 'text' DF column
         """
         data_df = self.load_input_data(text_column_names)
@@ -32,10 +31,10 @@ class DatasetPreparation:
         return data_df
 
     def load_input_data(self, text_column_names: List[str] = None) -> pd.DataFrame:
-        """Loads data from csv file into DataFrame (DF) with category and text column.
+        """Loads data from csv file into DataFrame with category and text column.
 
         :param text_column_names specifies the columns in csv file, that should be concatenated to the 'text' DF column
-        :return dataframe with category and text columns
+        :return DataFrame with category and text columns
         """
         input_data_df = pd.read_csv(self._input_file_name)
         data_df = input_data_df[['category']]
@@ -48,7 +47,7 @@ class DatasetPreparation:
 
     @staticmethod
     def split_train_test_data(data: pd.Series, labels: pd.Series) -> list:
-        """Split dataset into training and validation data."""
+        """Splits dataset into training and testing data."""
         train_data, test_data, train_labels, test_labels = model_selection.train_test_split(data, labels, test_size=0.2,
                                                                                             random_state=1)
         print(f'Size of train data: {len(train_data)}')

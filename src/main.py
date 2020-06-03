@@ -55,13 +55,14 @@ if TRAINING:
         lstm_classificator.evaluate_model(test_data, test_labels, categories)
 
 if CLASSIFICATION:
-    text = ''
-
     if MODEL_TYPE == 'SVN':
-        svm_classificator = SVMClassification('models/svm_model.p')
-        category = svm_classificator.classify(text)
+        classificator = SVMClassification('models/svm_model.p')
     elif MODEL_TYPE == 'LSTM':
-        lstm_classificator = LSTMClassification('models/lstm_model.p')
-        category = lstm_classificator.classify(text)
+        classificator = LSTMClassification('models/lstm_model_bidirectional_without_weights.p')
 
+    with open('data/example_texts.txt') as f:
+        example_texts = list(f)
+
+    text = example_texts[0]
+    category = classificator.classify(text)
     print(category)

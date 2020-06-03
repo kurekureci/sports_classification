@@ -20,8 +20,6 @@ class FasttextVectors:
 
             if token in self._fasttext_vectors.keys():
                 vector_list.append(self._fasttext_vectors.get(token))
-            # else:
-            #     print(token)
 
         if len(vector_list) == 0:
             vector_list.append(np.zeros(self._vector_dim))
@@ -38,10 +36,9 @@ class FasttextVectors:
 
         return data_vectors
 
-    def _load_fasttext_vectors_to_dict(self):
+    def _load_fasttext_vectors_to_dict(self) -> dict:
         """Pre-trained word vectors for czech language, trained on Common Crawl and Wikipedia using fastText.
-
-        Using CBOW with position-weights, dimension 300, character n-grams of length 5, window size 5 and 10 negatives
+        Using CBOW with position-weights, dimension 300, character n-grams of length 5, window size 5 and 10 negatives.
         """
         if os.path.exists(self._vector_dict_file_path):
             vectors = pickle.load(open(self._vector_dict_file_path, 'rb'))
@@ -58,9 +55,3 @@ class FasttextVectors:
             pickle.dump(vectors, open(self._vector_dict_file_path, 'wb'))
 
         return vectors
-
-
-if __name__ == '__main__':
-    from gensim.models import Word2Vec
-    model = Word2Vec.load_word2vec_format('cc.cs.300.bin', binary=True)
-

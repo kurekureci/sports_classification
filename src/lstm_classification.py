@@ -15,14 +15,13 @@ from src.model_evaluation import ModelEvaluation
 
 class LSTMClassification:
 
-    def __init__(self, model_save_path: str = 'lstm_model.p') -> None:
-        # The maximum number of words to be used. (most frequent)
+    def __init__(self, model_save_path: str = 'models/lstm_model.p') -> None:
         self._model_save_path = model_save_path
-        self._max_number_of_words = 50000
+        self._max_number_of_words = 50000  # maximum number of words to be used. (most frequent)
         self._embedding_dim = 300
         self._categories_path = 'data/categories_lstm.p'
         self._tokenizer_save_path = 'data/tokenizer_for_lstm.p'
-        self._max_sequence_length = 435  # max number of words in each text for NN
+        self._max_sequence_length = 435  # maximum number of words in each text for NN
 
     def get_string_tokens(self, text: str) -> list:
         """Returns numeric tokens of input string."""
@@ -53,13 +52,13 @@ class LSTMClassification:
         print('Label tensor shape:', labels.shape)
         return [tokens, labels, categories]
 
-    def get_padded_sequences(self, tokens):
+    def get_padded_sequences(self, tokens: list) -> list:
         """Returns padded vectors with zeros."""
         padded_tokens = pad_sequences(tokens, maxlen=self._max_sequence_length)
         print('Data tensor shape:', padded_tokens.shape)
         return padded_tokens
 
-    def get_model(self, input_length):
+    def _get_model(self, input_length) -> Sequential:
         """Defines the model's architecture."""
         model = Sequential()
         model.add(Embedding(self._max_number_of_words, self._embedding_dim, input_length=input_length, mask_zero=True))
@@ -71,8 +70,9 @@ class LSTMClassification:
 
     @staticmethod
     def calculate_category_weights(data_df: pd.DataFrame, categories: list, weighted: bool = False) -> dict:
+        """Calculation of weights for each category."""
         data_value_counts = data_df.category.value_counts()
-        category_weights = data_value_counts['fotbal'] / data_value_counts
+        category_weights = data_value_counts.max() / data_value_counts
         class_weights = dict()
 
         for ind, category in enumerate(categories):
@@ -85,16 +85,16 @@ class LSTMClassification:
         return class_weights
 
     def train_model(self, train_test_data_labels: list, class_weights: dict, epochs: int = 5,
-                    batch_size: int = 64, save_model: bool = True):
-        """Trains the SVM model on input data and labels."""
+                    batch_size: int = 64, save_model: bool = True) -> Sequential:
+        """Trains the LSTM model on input data and labels."""
         [train_data, test_data, train_labels, test_labels] = train_test_data_labels
-        model = self.get_model(train_data.shape[1])
+        model = self._get_model(train_data.shape[1])
 
         history = model.fit(train_data, train_labels, epochs=epochs, batch_size=batch_size,
                             validation_data=(test_data, test_labels),
                             class_weight=class_weights,
                             callbacks=[EarlyStopping(monitor='val_loss', patience=3, min_delta=0.0001)])
-        self.plot_training_history(history)
+        self._plot_training_history(history)
 
         if save_model:
             pickle.dump(model, open(self._model_save_path, 'wb'))
@@ -103,9 +103,8 @@ class LSTMClassification:
         return model
 
     @staticmethod
-    def plot_training_history(history):
-        import matplotlib.pyplot as plt
-
+    def _plot_training_history(history) -> None:
+        """Shows plots with accuracy and loss during training."""
         plt.title('Loss')
         plt.plot(history.history['loss'], label='train')
         plt.plot(history.history['val_loss'], label='test')
@@ -118,7 +117,7 @@ class LSTMClassification:
         plt.legend()
         plt.show()
 
-    def evaluate_model(self, data: list, labels: list, categories: list, model=None) -> None:
+    def evaluate_model(self, data: list, labels: list, categories: list, model: Sequential = None) -> None:
         """Evaluates the model on the input data."""
 
         if model is None:
@@ -146,4 +145,4 @@ class LSTMClassification:
 
         predicted_output = model.predict(padded_tokens)
         predicted_label = np.argmax(predicted_output)
-        return categories[predicted_label][0]
+        return categories[predicted_label]
