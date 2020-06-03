@@ -1,9 +1,7 @@
 # Použité metody
-Nejdříve byla prozkoumána vstupní data. Některé perexy obsahují jen velice krátký text, je v nich například uveden jen čas zápasu, proto jsem se rozhodla pro učení i klasifikaci sloučit název článku s perexem do jednoho textu a využít tak textovou informaci dohromady.
-Dále je třeba převést text na vhodnou číselnou reprezentaci, k čemuž jsem se rozhodla použít v poslední době hojně využívané “word embeddings”. 
 
 ## FastText a SVM
-
+Pro převedení textu na vhodnou číselnou reprezentaci jsem se rozhodla použít v poslední době hojně využívané “word embeddings”.
 Vektorová reprezentace ze vstupních dat byla vytvořena s použitím předtrénovaných vektorů pro češtinu, trénovaných na Common Crawl a Wikipedia textech pomocí fastText modelu, využívajícího CBOW s dimenzí 300, n-gramy délky 5, velikostí okna 5 a minus 10.
 
 Vektory dále zpracovává SVM klasifikátor s radiální bázovou funkcí. Pro každý vstup (text) do modelu jsou jeho vektory zprůměrovány a standardizovány odečtením průměru a podělením standartní odchylkou.
