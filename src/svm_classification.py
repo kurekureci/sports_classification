@@ -70,7 +70,6 @@ class SVMClassification:
         print(f'Input: {text}')
         preparator = DatasetPreparation()
         text = preparator.clean_text(text)
-
         tokens = self.get_string_tokens(text)
 
         fasttext = FasttextVectors()
@@ -80,14 +79,3 @@ class SVMClassification:
         categories = pickle.load(open(self._categories_path, 'rb'))
         predicted_label = model.predict([text_vector])
         return categories[predicted_label][0]
-
-
-if __name__ == '__main__':
-    # Example text classification
-    svm_classificator = SVMClassification('svm_model.p')
-    texts = ['Sparta jede.',
-             'Jágr za téměř 22 tisíc korun míří do Polska',
-             'Špotáková se ozvala pět minut dvanáct. A tak snový start kariéry pokračoval',
-             'Sokolov podle šéfa Baníku nebude mít s dohráním druhé ligy potíže']
-    category = svm_classificator.classify(texts[0])
-    print(category)

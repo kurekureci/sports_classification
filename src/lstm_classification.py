@@ -20,7 +20,7 @@ class LSTMClassification:
         self._model_save_path = model_save_path
         self._max_number_of_words = 50000
         self._embedding_dim = 300
-        self._categories_path = 'data/categories.p'
+        self._categories_path = 'data/categories_lstm.p'
         self._tokenizer_save_path = 'data/tokenizer_for_lstm.p'
         self._max_sequence_length = 435  # max number of words in each text for NN
 
@@ -46,6 +46,10 @@ class LSTMClassification:
         one_hot_encoded_categories = pd.get_dummies(data_df['category'])
         labels = one_hot_encoded_categories.values
         categories = one_hot_encoded_categories.columns.tolist()
+
+        if not os.path.exists(self._categories_path):
+            pickle.dump(categories, open(self._categories_path, 'wb'))
+
         print('Label tensor shape:', labels.shape)
         return [tokens, labels, categories]
 
@@ -58,7 +62,7 @@ class LSTMClassification:
     def get_model(self, input_length):
         """Defines the model's architecture."""
         model = Sequential()
-        model.add(Embedding(self._max_number_of_words, self._embedding_dim, input_length=input_length))
+        model.add(Embedding(self._max_number_of_words, self._embedding_dim, input_length=input_length, mask_zero=True))
         model.add(SpatialDropout1D(0.2))
         model.add(Bidirectional(LSTM(100, dropout=0.2, recurrent_dropout=0.2)))
         model.add(Dense(24, activation='softmax'))
@@ -136,20 +140,10 @@ class LSTMClassification:
         text = preparator.clean_text(text)
 
         tokens = self.get_string_tokens(text)
+        padded_tokens = self.get_padded_sequences(tokens)
         model = pickle.load(open(self._model_save_path, 'rb'))
         categories = pickle.load(open(self._categories_path, 'rb'))
 
-        predicted_output = model.predict(tokens)
+        predicted_output = model.predict(padded_tokens)
         predicted_label = np.argmax(predicted_output)
         return categories[predicted_label][0]
-
-
-if __name__ == '__main__':
-    # Example text classification
-    lstm_classificator = LSTMClassification('svm_model.p')
-    texts = ['Sparta jede.',
-             'Jágr za téměř 22 tisíc korun míří do Polska',
-             'Špotáková se ozvala pět minut dvanáct. A tak snový start kariéry pokračoval',
-             'Sokolov podle šéfa Baníku nebude mít s dohráním druhé ligy potíže']
-    category = lstm_classificator.classify(texts[0])
-    print(category)
