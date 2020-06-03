@@ -6,8 +6,8 @@ from src.fasttext_vectors import FasttextVectors
 from src.svm_classification import SVMClassification
 from src.lstm_classification import LSTMClassification
 
-MODEL_TYPE = 'SVM'
-TRAINING = True
+MODEL_TYPE = 'LSTM'
+TRAINING = False
 CLASSIFICATION = True
 
 if TRAINING:
@@ -15,15 +15,8 @@ if TRAINING:
     preparator = DatasetPreparation()
     input_text_column_names = ['rss_title', 'rss_perex']
     data_df = preparator.prepare_dataset(input_text_column_names)
-
     data_value_counts = data_df.category.value_counts()
     print(data_value_counts)
-    #
-    # import matplotlib.pyplot as plt
-    # import seaborn as sns
-    # chart = sns.countplot(data_df['category'])
-    # chart.set_xticklabels(chart.get_xticklabels(), rotation=45, horizontalalignment='right')
-    # plt.show()
 
     if MODEL_TYPE == 'SVM':
         svm_classificator = SVMClassification('svm_model_resampled_data.p')
