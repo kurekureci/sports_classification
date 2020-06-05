@@ -24,7 +24,7 @@ if TRAINING:
         data_vectors = fasttext.get_data_vectors(tokens)
         [train_data, test_data, train_labels, test_labels] = preparator.split_train_test_data(data_vectors, labels)
 
-        model = svm_classificator.train_model(train_data, train_labels, save_model=True)
+        # model = svm_classificator.train_model(train_data, train_labels, save_model=True)
         svm_classificator.evaluate_model(test_data, test_labels, categories)
 
     elif MODEL_TYPE == 'LSTM':
@@ -48,5 +48,5 @@ if CLASSIFICATION:
         example_texts = list(f)
 
     for text in example_texts:
-        category = lstm_classificator.classify(text)
+        category = classificator.classify(text)
         print(category)
